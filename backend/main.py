@@ -25,14 +25,22 @@ from fastapi.openapi.utils import get_openapi
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import asyncio
     from database import SessionLocal
     from models.usuario import Usuario
-    db = SessionLocal()
-    qtd = db.query(Usuario).count()
-    db.close()
-    if qtd == 0:
-        from utils.bootstrap import garantir_admins_iniciais
-        garantir_admins_iniciais()
+
+    def _bootstrap():
+        db = SessionLocal()
+        try:
+            qtd = db.query(Usuario).count()
+        finally:
+            db.close()
+        if qtd == 0:
+            from utils.bootstrap import garantir_admins_iniciais
+            garantir_admins_iniciais()
+
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, _bootstrap)
     yield
 
 app = FastAPI(
