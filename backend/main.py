@@ -1,5 +1,6 @@
 # ponto de entrada, registra as rotas
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 import logging
 
 from database import engine, Base
@@ -22,10 +23,23 @@ Base.metadata.create_all(bind=engine)
 from fastapi.security import HTTPBearer
 from fastapi.openapi.utils import get_openapi
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from database import SessionLocal
+    from models.usuario import Usuario
+    db = SessionLocal()
+    qtd = db.query(Usuario).count()
+    db.close()
+    if qtd == 0:
+        from utils.bootstrap import garantir_admins_iniciais
+        garantir_admins_iniciais()
+    yield
+
 app = FastAPI(
     title="AMSI Project",
     description="Sistema de gestão e registro de contas da associação de moradores",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan
 )
 
 http_bearer = HTTPBearer(auto_error=False)
