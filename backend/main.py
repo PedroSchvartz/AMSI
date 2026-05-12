@@ -15,6 +15,7 @@ from auth.router import router as auth_router
 
 from fastapi.middleware.cors import CORSMiddleware
 from utils.request_logger import RequestLoggerMiddleware, router as logs_router
+from utils.config import FRONTEND_URL, NGROK_TOKEN, NGROK_DOMAIN, APP_HOST, APP_PORT
 
 Base.metadata.create_all(bind=engine)
 
@@ -131,8 +132,6 @@ def gerar_doc_ia(app, output_file="openapi_ai.yaml"):
 
     print(f"\n📄 Documento para IA gerado em: {output_file}\n")
     return
-
-from utils.config import FRONTEND_URL, NGROK_TOKEN, NGROK_DOMAIN, APP_HOST, APP_PORT
 
 if __name__ == "__main__":
     import uvicorn
